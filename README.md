@@ -1,3 +1,3 @@
 # spring-boot-starter-grpc
 
-grpc 基于服务fu'wu服务服务zhu'ce
+grpc 基于consul的服务注册及服务发现
