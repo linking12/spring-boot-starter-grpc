@@ -11,11 +11,9 @@ import java.lang.annotation.Target;
 @Target({ ElementType.FIELD, ElementType.METHOD })
 public @interface GRpcReference {
 
-    String serviceName() default "";
+    String group() default GrpcConstants.DEFAULT_GROUP;
 
-    String version() default "";
-
-    String group() default "";
+    String version() default GrpcConstants.DEFAULT_VERSION;
 
     // blocking async future
     String callType() default "future";

@@ -38,8 +38,10 @@ public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
             for (Field field : fields) {
                 GRpcReference reference = field.getAnnotation(GRpcReference.class);
                 if (reference != null) {
-                    String serviceName = reference.serviceName();
-                    Channel channel = this.generateChannel(serviceName);
+                    String serviceName = StringUtils.substringBefore(field.getType().getName(), "$");
+                    String group = reference.group();
+                    String version = reference.version();
+                    Channel channel = this.generateChannel(serviceName, group, version);
                     String clzzName = field.getType().getName();
                     // 没有破坏pb的生成规则
                     if (clzzName.contains("$")) {
@@ -81,19 +83,26 @@ public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
         return bean;
     }
 
-    private Channel generateChannel(String serviceName) {
+    private Channel generateChannel(String serviceName, String group, String version) {
         String consulUrl = "consul:///" + gRpcServerProperties.getConsulIp() + ":"
                            + gRpcServerProperties.getConsulPort();
         ManagedChannel channel = ManagedChannelBuilder.forTarget(consulUrl)//
-                                                      .nameResolverFactory(buildNameResolverFactory(serviceName))//
+                                                      .nameResolverFactory(buildNameResolverFactory(serviceName, group,
+                                                                                                    version))//
                                                       .loadBalancerFactory(buildLoadBalanceFactory()).usePlaintext(true).build();//
         Channel channelWrap = ClientInterceptors.intercept(channel, new TraceClientInterceptor());
         return channelWrap;
     }
 
-    private NameResolver.Factory buildNameResolverFactory(String serviceName) {
-        final Attributes attributesParams = Attributes.newBuilder().set(ConsulNameResolver.PARAMS_DEFAULT_SERVICESNAME,
-                                                                        serviceName).build();
+    private NameResolver.Factory buildNameResolverFactory(String serviceName, String group, String versoin) {
+        final Attributes attributesParams = Attributes.newBuilder()//
+                                                      .set(ConsulNameResolver.PARAMS_DEFAULT_SERVICESNAME, //
+                                                           serviceName)//
+                                                      .set(ConsulNameResolver.PARAMS_DEFAULT_GROUP, //
+                                                           group) //
+                                                      .set(ConsulNameResolver.PARAMS_DEFAULT_VERSION, //
+                                                           versoin).build();
+
         return new NameResolver.Factory() {
 
             @Override

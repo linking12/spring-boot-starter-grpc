@@ -18,4 +18,9 @@ public @interface GRpcService {
     Class<? extends ServerInterceptor>[] interceptors() default {};
 
     boolean applyGlobalInterceptors() default true;
+
+    String group() default GrpcConstants.DEFAULT_GROUP;
+
+    String version() default GrpcConstants.DEFAULT_VERSION;
+
 }

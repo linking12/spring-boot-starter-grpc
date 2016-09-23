@@ -29,10 +29,10 @@ public class GrpcConstants {
     public static Metadata.Key<String> GRPC_TRACE_KEY           = Metadata.Key.of("grpc_header_trace_key",
                                                                                 Metadata.ASCII_STRING_MARSHALLER);
 
-    public static Metadata.Key<byte[]> GRPC_CONTEXT_ATTACHMENTS        = Metadata.Key.of("grpc_header_attachments",
+    public static Metadata.Key<byte[]> GRPC_CONTEXT_ATTACHMENTS        = Metadata.Key.of("grpc_header_attachments-bin",
                                                                                 Metadata.BINARY_BYTE_MARSHALLER);
 
-    public static Metadata.Key<byte[]> GRPC_CONTEXT_VALUES             = Metadata.Key.of("grpc_header_values",
+    public static Metadata.Key<byte[]> GRPC_CONTEXT_VALUES             = Metadata.Key.of("grpc_header_values-bin",
                                                                                 Metadata.BINARY_BYTE_MARSHALLER);
 
 }

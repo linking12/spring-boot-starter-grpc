@@ -64,7 +64,7 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
             serverBuilder.addService(serviceDefinition);
             String superServiceName = bindableService.getClass().getGenericSuperclass().getTypeName();
             String serviceName = StringUtils.split(superServiceName, "$")[0];
-            doRegistryService(serviceName);
+            doRegistryService(serviceName, gRpcServiceAnn);
             log.info("'{}' service has been registered.", bindableService.getClass().getName());
 
         }
@@ -73,21 +73,17 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
         startDaemonAwaitThread();
     }
 
-    private void doRegistryService(String serviceName) {
+    private void doRegistryService(String serviceName, GRpcService gRpcService) {
         URL consulURL = new URL("consul", gRpcServerProperties.getConsulIp(), gRpcServerProperties.getConsulPort(), "");
         Registry consulRegistry = RegistryFactory.getRegistry(consulURL);
-        URL serviceURL = buildServiceUrl(serviceName, gRpcServerProperties.getServerPort());
+        Map<String, String> params = new HashMap<String, String>();
+        params.put(URLParamType.protocol.getName(), GrpcConstants.DEFAULT_PROTOCOL);
+        params.put(URLParamType.group.getName(), gRpcService.group());
+        params.put(URLParamType.version.getName(), gRpcService.version());
+        URL serviceURL = new URL(GrpcConstants.DEFAULT_PROTOCOL, NetUtils.getLocalAddress().getHostAddress(),
+                                 gRpcServerProperties.getServerPort(), serviceName, params);
         consulRegistry.register(serviceURL);
         consulRegistry.available(serviceURL);
-    }
-
-    private URL buildServiceUrl(String serviceName, int port) {
-        Map<String, String> params = new HashMap<String, String>();
-        params.put(URLParamType.group.getName(), GrpcConstants.DEFAULT_GROUP);
-        params.put(URLParamType.protocol.getName(), GrpcConstants.DEFAULT_PROTOCOL);
-        URL url = new URL(GrpcConstants.DEFAULT_PROTOCOL, NetUtils.getLocalAddress().getHostAddress(), port,
-                          serviceName, params);
-        return url;
     }
 
     private ServerServiceDefinition bindInterceptors(ServerServiceDefinition serviceDefinition, GRpcService gRpcService,

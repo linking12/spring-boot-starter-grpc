@@ -4,7 +4,9 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -16,6 +18,7 @@ import com.quancheng.starter.grpc.registry.NotifyListener;
 import com.quancheng.starter.grpc.registry.Registry;
 import com.quancheng.starter.grpc.registry.RegistryFactory;
 import com.quancheng.starter.grpc.registry.URL;
+import com.quancheng.starter.grpc.registry.URLParamType;
 import com.quancheng.starter.grpc.registry.util.NetUtils;
 
 import io.grpc.Attributes;
@@ -33,6 +36,10 @@ public class ConsulNameResolver extends NameResolver {
     private Listener                           listener;
 
     public static final Attributes.Key<String> PARAMS_DEFAULT_SERVICESNAME = Attributes.Key.of("serviceName");
+
+    public static final Attributes.Key<String> PARAMS_DEFAULT_GROUP        = Attributes.Key.of("group");
+
+    public static final Attributes.Key<String> PARAMS_DEFAULT_VERSION      = Attributes.Key.of("version");
 
     private NotifyListener                     notifyListener              = new NotifyListener() {
 
@@ -72,8 +79,12 @@ public class ConsulNameResolver extends NameResolver {
         }
         URL registerUrl = new URL("consul", host, port, "");
         registry = RegistryFactory.getRegistry(registerUrl);
+        Map<String, String> urlParam = new HashMap<String, String>();
+        urlParam.put(URLParamType.protocol.getName(), GrpcConstants.DEFAULT_PROTOCOL);
+        urlParam.put(URLParamType.group.getName(), params.get(ConsulNameResolver.PARAMS_DEFAULT_GROUP));
+        urlParam.put(URLParamType.version.getName(), params.get(ConsulNameResolver.PARAMS_DEFAULT_VERSION));
         refUrl = new URL(GrpcConstants.DEFAULT_PROTOCOL, NetUtils.getLocalAddress().getHostAddress(),
-                         GrpcConstants.DEFAULT_INT_VALUE, params.get(PARAMS_DEFAULT_SERVICESNAME));
+                         GrpcConstants.DEFAULT_INT_VALUE, params.get(PARAMS_DEFAULT_SERVICESNAME), urlParam);
     }
 
     @Override
