@@ -1,8 +1,6 @@
-package com.quancheng.starter.grpc.trace;
+package com.quancheng.starter.grpc.internal;
 
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.Gson;
 import com.quancheng.starter.grpc.GrpcConstants;
@@ -17,13 +15,7 @@ import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 
-public class TraceClientInterceptor implements ClientInterceptor {
-
-    private final GenerateTraceId generateTraceId;
-
-    public TraceClientInterceptor(){
-        generateTraceId = GenerateTraceId.getInstance();
-    }
+public class GRpcHeaderClientInterceptor implements ClientInterceptor {
 
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> method,
@@ -32,13 +24,6 @@ public class TraceClientInterceptor implements ClientInterceptor {
 
             @Override
             public void start(Listener<RespT> responseListener, Metadata headers) {
-                String traceId = RpcContext.getContext().getAttachment("grpc_header_trace_key");
-                if (StringUtils.isBlank(traceId)) {
-                    headers.put(GrpcConstants.GRPC_TRACE_KEY, generateTraceId.getTraceId().toString());
-                } else {
-                    RpcContext.getContext().removeAttachment("grpc_header_trace_key");
-                    headers.put(GrpcConstants.GRPC_TRACE_KEY, traceId);
-                }
                 copyThreadLocalToMetadata(headers);
                 super.start(new SimpleForwardingClientCallListener<RespT>(responseListener) {
 

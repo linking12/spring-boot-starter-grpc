@@ -11,7 +11,8 @@ import org.springframework.beans.factory.config.InstantiationAwareBeanPostProces
 import com.google.common.base.Preconditions;
 import com.quancheng.starter.grpc.autoconfigure.GRpcServerProperties;
 import com.quancheng.starter.grpc.internal.ConsulNameResolver;
-import com.quancheng.starter.grpc.trace.TraceClientInterceptor;
+import com.quancheng.starter.grpc.internal.GRpcHeaderClientInterceptor;
+import com.quancheng.starter.grpc.trace.GrpcTracer;
 
 import io.grpc.Attributes;
 import io.grpc.Channel;
@@ -21,13 +22,17 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.NameResolver;
 import io.grpc.util.RoundRobinLoadBalancerFactory;
+import io.opentracing.contrib.grpc.ClientTracingInterceptor;
 
 public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdapter {
 
     private final GRpcServerProperties gRpcServerProperties;
 
+    private final GrpcTracer           grpcTracer;
+
     public GRpcReferenceRunner(GRpcServerProperties gRpcServerProperties){
         this.gRpcServerProperties = gRpcServerProperties;
+        this.grpcTracer = new GrpcTracer();
     }
 
     @Override
@@ -90,7 +95,8 @@ public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
                                                       .nameResolverFactory(buildNameResolverFactory(serviceName, group,
                                                                                                     version))//
                                                       .loadBalancerFactory(buildLoadBalanceFactory()).usePlaintext(true).build();//
-        Channel channelWrap = ClientInterceptors.intercept(channel, new TraceClientInterceptor());
+        Channel channelWrap = ClientInterceptors.intercept(channel, new ClientTracingInterceptor(this.grpcTracer),
+                                                           new GRpcHeaderClientInterceptor());
         return channelWrap;
     }
 

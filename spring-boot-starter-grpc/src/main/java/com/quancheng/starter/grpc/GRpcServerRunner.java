@@ -22,12 +22,13 @@ import org.springframework.core.type.StandardMethodMetadata;
 
 import com.google.common.collect.Lists;
 import com.quancheng.starter.grpc.autoconfigure.GRpcServerProperties;
+import com.quancheng.starter.grpc.internal.GRpcHeaderServerInterceptor;
 import com.quancheng.starter.grpc.registry.Registry;
 import com.quancheng.starter.grpc.registry.RegistryFactory;
 import com.quancheng.starter.grpc.registry.URL;
 import com.quancheng.starter.grpc.registry.URLParamType;
 import com.quancheng.starter.grpc.registry.util.NetUtils;
-import com.quancheng.starter.grpc.trace.TraceServerInterceptor;
+import com.quancheng.starter.grpc.trace.GrpcTracer;
 
 import io.grpc.BindableService;
 import io.grpc.Server;
@@ -35,6 +36,7 @@ import io.grpc.ServerBuilder;
 import io.grpc.ServerInterceptor;
 import io.grpc.ServerInterceptors;
 import io.grpc.ServerServiceDefinition;
+import io.opentracing.contrib.grpc.ServerTracingInterceptor;
 
 public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
 
@@ -47,6 +49,12 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
     private AbstractApplicationContext applicationContext;
 
     private Server                     server;
+
+    private final GrpcTracer           grpcTracer;
+
+    public GRpcServerRunner(){
+        this.grpcTracer = new GrpcTracer();
+    }
 
     @Override
     public void run(String... args) throws Exception {
@@ -97,7 +105,8 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
             }
         });
         List<ServerInterceptor> interceptors = Lists.newArrayList();
-        interceptors.add(new TraceServerInterceptor());
+        interceptors.add(new ServerTracingInterceptor(this.grpcTracer));
+        interceptors.add(new GRpcHeaderServerInterceptor());
         List<ServerInterceptor> userInterceptors = Stream.concat(gRpcService.applyGlobalInterceptors() ? globalInterceptors.stream() : Stream.empty(),
                                                                  privateInterceptors).distinct().collect(Collectors.toList());
         interceptors.addAll(userInterceptors);

@@ -1,4 +1,4 @@
-package com.quancheng.starter.grpc.trace;
+package com.quancheng.starter.grpc.internal;
 
 import java.util.Map;
 
@@ -13,13 +13,11 @@ import io.grpc.ServerCall.Listener;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 
-public class TraceServerInterceptor implements ServerInterceptor {
+public class GRpcHeaderServerInterceptor implements ServerInterceptor {
 
     @Override
     public <ReqT, RespT> Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, final Metadata headers,
                                                       ServerCallHandler<ReqT, RespT> next) {
-        String traceId = headers.get(GrpcConstants.GRPC_TRACE_KEY);
-        RpcContext.getContext().set("grpc_header_trace_key", traceId);
         copyMetadataToThreadLocal(headers);
         return next.startCall(new SimpleForwardingServerCall<ReqT, RespT>(call) {
 
