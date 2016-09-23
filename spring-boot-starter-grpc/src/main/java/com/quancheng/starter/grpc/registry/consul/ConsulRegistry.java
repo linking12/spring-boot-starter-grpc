@@ -121,6 +121,7 @@ public class ConsulRegistry extends CommonFailBackRegistry {
     protected List<URL> discoverService(URL url) {
         String service = ConsulUtils.getUrlClusterInfo(url);
         String group = url.getGroup();
+        String version = url.getVersion();
         List<URL> serviceUrls = new ArrayList<URL>();
         ConcurrentHashMap<String, List<URL>> serviceMap = serviceCache.get(group);
         if (serviceMap == null) {
@@ -134,7 +135,12 @@ public class ConsulRegistry extends CommonFailBackRegistry {
             }
         }
         if (serviceMap != null) {
-            serviceUrls = serviceMap.get(service);
+            List<URL> serviceUrlsCache = serviceMap.get(service);
+            for (URL serviceUrlCache : serviceUrlsCache) {
+                if (serviceUrlCache.getVersion().equals(version)) {
+                    serviceUrls.add(serviceUrlCache);
+                }
+            }
         }
         return serviceUrls;
     }

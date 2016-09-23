@@ -1,13 +1,15 @@
 syntax = "proto3";
 
 option java_package = "io.grpc.examples";
-
-
+import "google/api/annotations.proto";
 
 // The greeter service definition.
 service Greeter {
     // Sends a greeting
-    rpc SayHello ( HelloRequest) returns (  HelloReply) {}
+    rpc SayHello ( HelloRequest) returns (  HelloReply) {
+      option (google.api.http).get = "/v1/messages/{message_id}/{sub.subfield}";
+   }
+     
 
 }
 

@@ -7,7 +7,7 @@ import com.quancheng.starter.grpc.GRpcService;
 
 import io.grpc.stub.StreamObserver;
 
-@GRpcService(interceptors = { LogInterceptor.class })
+@GRpcService(interceptors = { LogInterceptor.class }, group = "group1", version = "1.0.0.0")
 public class GreeterService extends GreeterGrpc.GreeterImplBase {
 
     @Override

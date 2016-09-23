@@ -8,20 +8,19 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.quancheng.starter.grpc.GRpcReference;
 
-
 /**
  * Created by alexf on 28-Jan-16.
  */
 
 @SpringBootApplication
-public class DemoApp implements CommandLineRunner {
+public class ClientDemoApp implements CommandLineRunner {
 
-    @GRpcReference(serviceName = "org.lognet.springboot.grpc.demo.GreeterService", group = "default", version = "1.0")
+    @GRpcReference(group = "group1", version = "1.0.0.0")
     private GreeterGrpc.GreeterFutureStub greeterFutureStub;
 
     public static void main(String[] args) {
 
-        SpringApplication.run(DemoApp.class, args);
+        SpringApplication.run(ClientDemoApp.class, args);
     }
 
     @Override

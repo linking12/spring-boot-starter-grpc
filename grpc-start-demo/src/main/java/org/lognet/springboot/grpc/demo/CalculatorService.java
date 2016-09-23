@@ -7,7 +7,7 @@ import com.quancheng.starter.grpc.GRpcService;
 
 import io.grpc.stub.StreamObserver;
 
-@GRpcService
+@GRpcService(interceptors = { LogInterceptor.class }, group = "group1", version = "1.0.0.0")
 public class CalculatorService extends CalculatorGrpc.CalculatorImplBase {
 
     @Override
