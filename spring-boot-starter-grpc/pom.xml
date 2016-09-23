@@ -81,6 +81,11 @@
 			<artifactId>grpc-opentracing</artifactId>
 			<version>0.1.0</version>
 		</dependency>
+		<dependency>
+			<groupId>io.prometheus</groupId>
+			<artifactId>simpleclient</artifactId>
+			<version>0.0.16</version>
+		</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>

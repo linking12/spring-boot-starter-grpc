@@ -23,6 +23,8 @@ import org.springframework.core.type.StandardMethodMetadata;
 import com.google.common.collect.Lists;
 import com.quancheng.starter.grpc.autoconfigure.GRpcServerProperties;
 import com.quancheng.starter.grpc.internal.GRpcHeaderServerInterceptor;
+import com.quancheng.starter.grpc.metrics.Configuration;
+import com.quancheng.starter.grpc.metrics.MonitoringServerInterceptor;
 import com.quancheng.starter.grpc.registry.Registry;
 import com.quancheng.starter.grpc.registry.RegistryFactory;
 import com.quancheng.starter.grpc.registry.URL;
@@ -104,13 +106,21 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
                 throw new BeanCreationException("Failed to create interceptor instance.", e);
             }
         });
-        List<ServerInterceptor> interceptors = Lists.newArrayList();
-        interceptors.add(new ServerTracingInterceptor(this.grpcTracer));
-        interceptors.add(new GRpcHeaderServerInterceptor());
+
+        List<ServerInterceptor> interceptors = this.buildStarterInterceptor();
         List<ServerInterceptor> userInterceptors = Stream.concat(gRpcService.applyGlobalInterceptors() ? globalInterceptors.stream() : Stream.empty(),
                                                                  privateInterceptors).distinct().collect(Collectors.toList());
         interceptors.addAll(userInterceptors);
         return ServerInterceptors.intercept(serviceDefinition, interceptors);
+    }
+
+    private List<ServerInterceptor> buildStarterInterceptor() {
+        List<ServerInterceptor> interceptors = Lists.newArrayList();
+        interceptors.add(new ServerTracingInterceptor(this.grpcTracer));
+        interceptors.add(new GRpcHeaderServerInterceptor());
+        MonitoringServerInterceptor monitoringInterceptor = MonitoringServerInterceptor.create(Configuration.cheapMetricsOnly());
+        interceptors.add(monitoringInterceptor);
+        return interceptors;
     }
 
     private void startDaemonAwaitThread() {

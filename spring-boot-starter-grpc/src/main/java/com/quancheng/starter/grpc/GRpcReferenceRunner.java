@@ -3,19 +3,24 @@ package com.quancheng.starter.grpc;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.quancheng.starter.grpc.autoconfigure.GRpcServerProperties;
 import com.quancheng.starter.grpc.internal.ConsulNameResolver;
 import com.quancheng.starter.grpc.internal.GRpcHeaderClientInterceptor;
+import com.quancheng.starter.grpc.metrics.Configuration;
+import com.quancheng.starter.grpc.metrics.MonitoringClientInterceptor;
 import com.quancheng.starter.grpc.trace.GrpcTracer;
 
 import io.grpc.Attributes;
 import io.grpc.Channel;
+import io.grpc.ClientInterceptor;
 import io.grpc.ClientInterceptors;
 import io.grpc.LoadBalancer;
 import io.grpc.ManagedChannel;
@@ -95,9 +100,16 @@ public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
                                                       .nameResolverFactory(buildNameResolverFactory(serviceName, group,
                                                                                                     version))//
                                                       .loadBalancerFactory(buildLoadBalanceFactory()).usePlaintext(true).build();//
-        Channel channelWrap = ClientInterceptors.intercept(channel, new ClientTracingInterceptor(this.grpcTracer),
-                                                           new GRpcHeaderClientInterceptor());
+        Channel channelWrap = ClientInterceptors.intercept(channel, buildStarterInterceptor());
         return channelWrap;
+    }
+
+    private List<ClientInterceptor> buildStarterInterceptor() {
+        List<ClientInterceptor> interceptors = Lists.newArrayList();
+        interceptors.add(new ClientTracingInterceptor(this.grpcTracer));
+        interceptors.add(new GRpcHeaderClientInterceptor());
+        interceptors.add(MonitoringClientInterceptor.create(Configuration.cheapMetricsOnly()));
+        return interceptors;
     }
 
     private NameResolver.Factory buildNameResolverFactory(String serviceName, String group, String versoin) {
