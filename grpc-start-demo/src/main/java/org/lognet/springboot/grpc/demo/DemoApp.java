@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 
 @SpringBootApplication
-public class DemoApp implements CommandLineRunner {
+public class DemoApp {
 
     // @GRpcReference(serviceName = "org.lognet.springboot.grpc.demo.GreeterService", group = "default", version =
     // "1.0")
@@ -18,16 +18,6 @@ public class DemoApp implements CommandLineRunner {
     public static void main(String[] args) {
 
         SpringApplication.run(DemoApp.class, args);
-    }
-
-    @Override
-    public void run(String... args) throws Exception {
-        // String name = "John";
-        // final GreeterOuterClass.HelloRequest helloRequest =
-        // GreeterOuterClass.HelloRequest.newBuilder().setName(name).build();
-        // final String reply = greeterFutureStub.sayHello(helloRequest).get().getMessage();
-        // System.out.println(reply);
-
     }
 
 }

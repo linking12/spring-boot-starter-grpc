@@ -86,7 +86,7 @@ class ServerMetrics {
         private final Counter             serverStreamMessagesSent;
         private final Optional<Histogram> serverHandledLatencySeconds;
 
-        Factory(Configuration configuration){
+        Factory(MetricsConfiguration configuration){
             CollectorRegistry registry = configuration.getCollectorRegistry();
             this.serverStarted = serverStartedBuilder.register(registry);
             this.serverHandled = serverHandledBuilder.register(registry);

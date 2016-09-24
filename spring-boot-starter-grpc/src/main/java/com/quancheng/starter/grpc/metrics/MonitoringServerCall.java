@@ -19,11 +19,11 @@ class MonitoringServerCall<R, S> extends ForwardingServerCall.SimpleForwardingSe
     private final Clock         clock;
     private final GrpcMethod    grpcMethod;
     private final ServerMetrics serverMetrics;
-    private final Configuration configuration;
+    private final MetricsConfiguration configuration;
     private final Instant       startInstant;
 
     MonitoringServerCall(ServerCall<R, S> delegate, Clock clock, GrpcMethod grpcMethod, ServerMetrics serverMetrics,
-                         Configuration configuration){
+                         MetricsConfiguration configuration){
         super(delegate);
         this.clock = clock;
         this.grpcMethod = grpcMethod;

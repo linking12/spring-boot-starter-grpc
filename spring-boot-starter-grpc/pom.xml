@@ -64,7 +64,7 @@
 		<dependency>
 			<groupId>com.ecwid.consul</groupId>
 			<artifactId>consul-api</artifactId>
-			<version>1.1.4</version>
+			<version>1.1.11</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
@@ -83,8 +83,12 @@
 		</dependency>
 		<dependency>
 			<groupId>io.prometheus</groupId>
-			<artifactId>simpleclient</artifactId>
+			<artifactId>simpleclient_servlet</artifactId>
 			<version>0.0.16</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
 		</dependency>
 	</dependencies>
 	<dependencyManagement>

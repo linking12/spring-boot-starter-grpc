@@ -15,12 +15,12 @@ class MonitoringClientCallListener<S> extends ForwardingClientCallListener<S> {
     private final ClientCall.Listener<S> delegate;
     private final ClientMetrics          clientMetrics;
     private final GrpcMethod             grpcMethod;
-    private final Configuration          configuration;
+    private final MetricsConfiguration          configuration;
     private final Clock                  clock;
     private final Instant                startInstant;
 
     MonitoringClientCallListener(ClientCall.Listener<S> delegate, ClientMetrics clientMetrics, GrpcMethod grpcMethod,
-                                 Configuration configuration, Clock clock){
+                                 MetricsConfiguration configuration, Clock clock){
         this.delegate = delegate;
         this.clientMetrics = clientMetrics;
         this.grpcMethod = grpcMethod;

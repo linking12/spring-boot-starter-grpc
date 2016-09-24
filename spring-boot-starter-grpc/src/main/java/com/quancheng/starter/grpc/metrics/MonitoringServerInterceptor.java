@@ -11,15 +11,15 @@ import io.grpc.ServerInterceptor;
 public class MonitoringServerInterceptor implements ServerInterceptor {
 
     private final Clock                 clock;
-    private final Configuration         configuration;
+    private final MetricsConfiguration         configuration;
     private final ServerMetrics.Factory serverMetricsFactory;
 
-    public static MonitoringServerInterceptor create(Configuration configuration) {
+    public static MonitoringServerInterceptor create(MetricsConfiguration configuration) {
         return new MonitoringServerInterceptor(Clock.systemDefaultZone(), configuration,
                                                new ServerMetrics.Factory(configuration));
     }
 
-    private MonitoringServerInterceptor(Clock clock, Configuration configuration,
+    private MonitoringServerInterceptor(Clock clock, MetricsConfiguration configuration,
                                         ServerMetrics.Factory serverMetricsFactory){
         this.clock = clock;
         this.configuration = configuration;

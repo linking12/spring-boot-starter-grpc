@@ -11,15 +11,15 @@ import io.grpc.MethodDescriptor;
 public class MonitoringClientInterceptor implements ClientInterceptor {
 
     private final Clock                 clock;
-    private final Configuration         configuration;
+    private final MetricsConfiguration         configuration;
     private final ClientMetrics.Factory clientMetricsFactory;
 
-    public static MonitoringClientInterceptor create(Configuration configuration) {
+    public static MonitoringClientInterceptor create(MetricsConfiguration configuration) {
         return new MonitoringClientInterceptor(Clock.systemDefaultZone(), configuration,
                                                new ClientMetrics.Factory(configuration));
     }
 
-    private MonitoringClientInterceptor(Clock clock, Configuration configuration,
+    private MonitoringClientInterceptor(Clock clock, MetricsConfiguration configuration,
                                         ClientMetrics.Factory clientMetricsFactory){
         this.clock = clock;
         this.configuration = configuration;

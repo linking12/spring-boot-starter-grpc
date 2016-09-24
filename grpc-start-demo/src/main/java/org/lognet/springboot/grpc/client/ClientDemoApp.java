@@ -5,6 +5,8 @@ import org.lognet.springboot.grpc.proto.GreeterOuterClass;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
+import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 
 import com.quancheng.starter.grpc.GRpcReference;
 
@@ -13,7 +15,7 @@ import com.quancheng.starter.grpc.GRpcReference;
  */
 
 @SpringBootApplication
-public class ClientDemoApp implements CommandLineRunner {
+public class ClientDemoApp implements CommandLineRunner, EmbeddedServletContainerCustomizer {
 
     @GRpcReference(group = "group1", version = "1.0.0.0")
     private GreeterGrpc.GreeterFutureStub greeterFutureStub;
@@ -29,6 +31,12 @@ public class ClientDemoApp implements CommandLineRunner {
         final GreeterOuterClass.HelloRequest helloRequest = GreeterOuterClass.HelloRequest.newBuilder().setName(name).build();
         final String reply = greeterFutureStub.sayHello(helloRequest).get().getMessage();
         System.out.println(reply);
+
+    }
+
+    @Override
+    public void customize(ConfigurableEmbeddedServletContainer container) {
+        container.setPort(8081);
 
     }
 

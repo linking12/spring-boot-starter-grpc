@@ -2,7 +2,7 @@ package com.quancheng.starter.grpc.metrics;
 
 import io.prometheus.client.CollectorRegistry;
 
-public class Configuration {
+public class MetricsConfiguration {
 
     private static double[]         DEFAULT_LATENCY_BUCKETS = new double[] { .001, .005, .01, .05, 0.075, .1, .25, .5,
                                                                              1, 2, 5, 10 };
@@ -11,22 +11,22 @@ public class Configuration {
     private final CollectorRegistry collectorRegistry;
     private final double[]          latencyBuckets;
 
-    public static Configuration cheapMetricsOnly() {
-        return new Configuration(false /* isIncludeLatencyHistograms */, CollectorRegistry.defaultRegistry,
+    public static MetricsConfiguration cheapMetricsOnly() {
+        return new MetricsConfiguration(false /* isIncludeLatencyHistograms */, CollectorRegistry.defaultRegistry,
                                  DEFAULT_LATENCY_BUCKETS);
     }
 
-    public static Configuration allMetrics() {
-        return new Configuration(true /* isIncludeLatencyHistograms */, CollectorRegistry.defaultRegistry,
+    public static MetricsConfiguration allMetrics() {
+        return new MetricsConfiguration(true /* isIncludeLatencyHistograms */, CollectorRegistry.defaultRegistry,
                                  DEFAULT_LATENCY_BUCKETS);
     }
 
-    public Configuration withCollectorRegistry(CollectorRegistry collectorRegistry) {
-        return new Configuration(isIncludeLatencyHistograms, collectorRegistry, latencyBuckets);
+    public MetricsConfiguration withCollectorRegistry(CollectorRegistry collectorRegistry) {
+        return new MetricsConfiguration(isIncludeLatencyHistograms, collectorRegistry, latencyBuckets);
     }
 
-    public Configuration withLatencyBuckets(double[] buckets) {
-        return new Configuration(isIncludeLatencyHistograms, collectorRegistry, buckets);
+    public MetricsConfiguration withLatencyBuckets(double[] buckets) {
+        return new MetricsConfiguration(isIncludeLatencyHistograms, collectorRegistry, buckets);
     }
 
     public boolean isIncludeLatencyHistograms() {
@@ -43,7 +43,7 @@ public class Configuration {
         return latencyBuckets;
     }
 
-    private Configuration(boolean isIncludeLatencyHistograms, CollectorRegistry collectorRegistry,
+    private MetricsConfiguration(boolean isIncludeLatencyHistograms, CollectorRegistry collectorRegistry,
                           double[] latencyBuckets){
         this.isIncludeLatencyHistograms = isIncludeLatencyHistograms;
         this.collectorRegistry = collectorRegistry;

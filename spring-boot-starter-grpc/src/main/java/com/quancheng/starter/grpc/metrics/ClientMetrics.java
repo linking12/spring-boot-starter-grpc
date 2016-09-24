@@ -90,7 +90,7 @@ class ClientMetrics {
         private final Counter             streamMessagesSent;
         private final Optional<Histogram> completedLatencySeconds;
 
-        Factory(Configuration configuration){
+        Factory(MetricsConfiguration configuration){
             CollectorRegistry registry = configuration.getCollectorRegistry();
             this.rpcStarted = rpcStartedBuilder.register(registry);
             this.rpcCompleted = rpcCompletedBuilder.register(registry);

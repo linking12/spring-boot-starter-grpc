@@ -23,7 +23,7 @@ import org.springframework.core.type.StandardMethodMetadata;
 import com.google.common.collect.Lists;
 import com.quancheng.starter.grpc.autoconfigure.GRpcServerProperties;
 import com.quancheng.starter.grpc.internal.GRpcHeaderServerInterceptor;
-import com.quancheng.starter.grpc.metrics.Configuration;
+import com.quancheng.starter.grpc.metrics.MetricsConfiguration;
 import com.quancheng.starter.grpc.metrics.MonitoringServerInterceptor;
 import com.quancheng.starter.grpc.registry.Registry;
 import com.quancheng.starter.grpc.registry.RegistryFactory;
@@ -54,8 +54,11 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
 
     private final GrpcTracer           grpcTracer;
 
-    public GRpcServerRunner(){
+    private final MetricsConfiguration metricsConfiguration;
+
+    public GRpcServerRunner(MetricsConfiguration metricsConfiguration){
         this.grpcTracer = new GrpcTracer();
+        this.metricsConfiguration = metricsConfiguration;
     }
 
     @Override
@@ -118,7 +121,7 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
         List<ServerInterceptor> interceptors = Lists.newArrayList();
         interceptors.add(new ServerTracingInterceptor(this.grpcTracer));
         interceptors.add(new GRpcHeaderServerInterceptor());
-        MonitoringServerInterceptor monitoringInterceptor = MonitoringServerInterceptor.create(Configuration.cheapMetricsOnly());
+        MonitoringServerInterceptor monitoringInterceptor = MonitoringServerInterceptor.create(metricsConfiguration);
         interceptors.add(monitoringInterceptor);
         return interceptors;
     }

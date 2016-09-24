@@ -14,7 +14,7 @@ import com.google.common.collect.Lists;
 import com.quancheng.starter.grpc.autoconfigure.GRpcServerProperties;
 import com.quancheng.starter.grpc.internal.ConsulNameResolver;
 import com.quancheng.starter.grpc.internal.GRpcHeaderClientInterceptor;
-import com.quancheng.starter.grpc.metrics.Configuration;
+import com.quancheng.starter.grpc.metrics.MetricsConfiguration;
 import com.quancheng.starter.grpc.metrics.MonitoringClientInterceptor;
 import com.quancheng.starter.grpc.trace.GrpcTracer;
 
@@ -35,9 +35,12 @@ public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
 
     private final GrpcTracer           grpcTracer;
 
-    public GRpcReferenceRunner(GRpcServerProperties gRpcServerProperties){
+    private final MetricsConfiguration metricsConfiguration;
+
+    public GRpcReferenceRunner(GRpcServerProperties gRpcServerProperties, MetricsConfiguration metricsConfiguration){
         this.gRpcServerProperties = gRpcServerProperties;
         this.grpcTracer = new GrpcTracer();
+        this.metricsConfiguration = metricsConfiguration;
     }
 
     @Override
@@ -108,7 +111,7 @@ public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
         List<ClientInterceptor> interceptors = Lists.newArrayList();
         interceptors.add(new ClientTracingInterceptor(this.grpcTracer));
         interceptors.add(new GRpcHeaderClientInterceptor());
-        interceptors.add(MonitoringClientInterceptor.create(Configuration.cheapMetricsOnly()));
+        interceptors.add(MonitoringClientInterceptor.create(metricsConfiguration));
         return interceptors;
     }
 

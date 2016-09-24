@@ -10,11 +10,11 @@ class MonitoringClientCall<R, S> extends ForwardingClientCall.SimpleForwardingCl
 
     private final ClientMetrics clientMetrics;
     private final GrpcMethod    grpcMethod;
-    private final Configuration configuration;
+    private final MetricsConfiguration configuration;
     private final Clock         clock;
 
     MonitoringClientCall(ClientCall<R, S> delegate, ClientMetrics clientMetrics, GrpcMethod grpcMethod,
-                         Configuration configuration, Clock clock){
+                         MetricsConfiguration configuration, Clock clock){
         super(delegate);
         this.clientMetrics = clientMetrics;
         this.grpcMethod = grpcMethod;
