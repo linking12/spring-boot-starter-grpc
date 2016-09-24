@@ -48,15 +48,9 @@ public class GRpcAutoConfiguration {
         return metricsConfiguration.getCollectorRegistry();
     }
 
-    // @Bean
-    // public SpringBootMetricsCollector metricsCollector(final Collection<PublicMetrics> metrics,
-    // final CollectorRegistry registry) {
-    // return new SpringBootMetricsCollector(metrics).register(registry);
-    // }
-
     @Bean
     public ServletRegistrationBean exporterServlet(CollectorRegistry registry) {
-        return new ServletRegistrationBean(new MetricsServlet(registry), "/prometheus");
+        return new ServletRegistrationBean(new MetricsServlet(registry), "/metrics");
     }
 
 }
