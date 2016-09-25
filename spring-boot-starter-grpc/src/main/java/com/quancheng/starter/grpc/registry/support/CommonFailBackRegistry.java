@@ -22,9 +22,7 @@ public abstract class CommonFailBackRegistry extends FailbackRegistry {
         manager.addNotifyListener(listener);
         subscribeService(urlCopy, manager);
         List<URL> urls = doDiscover(urlCopy);
-        if (urls != null && urls.size() > 0) {
-            this.notify(urlCopy, listener, urls);
-        }
+        this.notify(urlCopy, listener, urls);
     }
 
     @Override

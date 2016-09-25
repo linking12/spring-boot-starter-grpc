@@ -153,33 +153,35 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     protected void notify(URL refUrl, NotifyListener listener, List<URL> urls) {
-        if (listener == null || urls == null) {
-            return;
-        }
-        Map<String, List<URL>> nodeTypeUrlsInRs = new HashMap<String, List<URL>>();
-        for (URL surl : urls) {
-            String nodeType = surl.getParameter(URLParamType.nodeType.getName(), URLParamType.nodeType.getValue());
-            List<URL> oneNodeTypeUrls = nodeTypeUrlsInRs.get(nodeType);
-            if (oneNodeTypeUrls == null) {
-                nodeTypeUrlsInRs.put(nodeType, new ArrayList<URL>());
-                oneNodeTypeUrls = nodeTypeUrlsInRs.get(nodeType);
+        if (listener == null || urls == null || urls.isEmpty()) {
+            listener.notify(getUrl(), null);
+        } else {
+            Map<String, List<URL>> nodeTypeUrlsInRs = new HashMap<String, List<URL>>();
+            for (URL surl : urls) {
+                String nodeType = surl.getParameter(URLParamType.nodeType.getName(), URLParamType.nodeType.getValue());
+                List<URL> oneNodeTypeUrls = nodeTypeUrlsInRs.get(nodeType);
+                if (oneNodeTypeUrls == null) {
+                    nodeTypeUrlsInRs.put(nodeType, new ArrayList<URL>());
+                    oneNodeTypeUrls = nodeTypeUrlsInRs.get(nodeType);
+                }
+                oneNodeTypeUrls.add(surl);
             }
-            oneNodeTypeUrls.add(surl);
-        }
-        Map<String, List<URL>> curls = subscribedCategoryResponses.get(refUrl);
-        if (curls == null) {
-            subscribedCategoryResponses.putIfAbsent(refUrl, new ConcurrentHashMap<String, List<URL>>());
-            curls = subscribedCategoryResponses.get(refUrl);
+            Map<String, List<URL>> curls = subscribedCategoryResponses.get(refUrl);
+            if (curls == null) {
+                subscribedCategoryResponses.putIfAbsent(refUrl, new ConcurrentHashMap<String, List<URL>>());
+                curls = subscribedCategoryResponses.get(refUrl);
+            }
+
+            // refresh local urls cache
+            for (String nodeType : nodeTypeUrlsInRs.keySet()) {
+                curls.put(nodeType, nodeTypeUrlsInRs.get(nodeType));
+            }
+
+            for (List<URL> us : nodeTypeUrlsInRs.values()) {
+                listener.notify(getUrl(), us);
+            }
         }
 
-        // refresh local urls cache
-        for (String nodeType : nodeTypeUrlsInRs.keySet()) {
-            curls.put(nodeType, nodeTypeUrlsInRs.get(nodeType));
-        }
-
-        for (List<URL> us : nodeTypeUrlsInRs.values()) {
-            listener.notify(getUrl(), us);
-        }
     }
 
     /**

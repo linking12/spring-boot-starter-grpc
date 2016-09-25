@@ -3,7 +3,6 @@ package com.quancheng.starter.grpc.internal;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +23,7 @@ import com.quancheng.starter.grpc.registry.util.NetUtils;
 import io.grpc.Attributes;
 import io.grpc.NameResolver;
 import io.grpc.ResolvedServerInfo;
+import io.grpc.Status;
 
 public class ConsulNameResolver extends NameResolver {
 
@@ -46,17 +46,23 @@ public class ConsulNameResolver extends NameResolver {
                                                                                @Override
                                                                                public void notify(URL registryUrl,
                                                                                                   List<URL> urls) {
-                                                                                   List<ResolvedServerInfo> servers = new ArrayList<ResolvedServerInfo>(urls.size());
-                                                                                   for (int i = 0; i < urls.size(); i++) {
-                                                                                       URL url = urls.get(i);
-                                                                                       String ip = url.getHost();
-                                                                                       int port = url.getPort();
-                                                                                       servers.add(new ResolvedServerInfo(new InetSocketAddress(InetAddresses.forString(ip),
-                                                                                                                                                port),
-                                                                                                                          Attributes.EMPTY));
+                                                                                   if (urls != null
+                                                                                       && !urls.isEmpty()) {
+                                                                                       List<ResolvedServerInfo> servers = new ArrayList<ResolvedServerInfo>(urls.size());
+                                                                                       for (int i = 0; i < urls.size(); i++) {
+                                                                                           URL url = urls.get(i);
+                                                                                           String ip = url.getHost();
+                                                                                           int port = url.getPort();
+                                                                                           servers.add(new ResolvedServerInfo(new InetSocketAddress(InetAddresses.forString(ip),
+                                                                                                                                                    port),
+                                                                                                                              Attributes.EMPTY));
+                                                                                       }
+
+                                                                                   } else {
+                                                                                       ConsulNameResolver.this.listener.onError(Status.NOT_FOUND.withDescription("There is no service registy in consul by"
+                                                                                                                                                                 + refUrl.toFullStr()));
                                                                                    }
-                                                                                   ConsulNameResolver.this.listener.onUpdate(Collections.singletonList(servers),
-                                                                                                                             Attributes.EMPTY);
+
                                                                                }
                                                                            };
 

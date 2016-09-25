@@ -30,26 +30,7 @@ public class TestMain {
         // }
         //
         // });
-        ManagedChannel channel = ManagedChannelBuilder.forTarget("consul:///192.168.99.103:8500").nameResolverFactory(new NameResolver.Factory() {
-
-            @Override
-            public NameResolver newNameResolver(URI targetUri, Attributes params) {
-                String targetPath = Preconditions.checkNotNull(targetUri.getPath(), "targetPath");
-                Preconditions.checkArgument(targetPath.startsWith("/"),
-                                            "the path component (%s) of the target (%s) must start with '/'",
-                                            targetPath, targetUri);
-                String name = targetPath.substring(1);
-                Attributes attributes = Attributes.newBuilder().set(ConsulNameResolver.PARAMS_DEFAULT_SERVICESNAME,
-                                                                    "org.lognet.springboot.grpc.demo.GreeterService").build();
-                return new ConsulNameResolver(targetUri.getAuthority(), name, attributes);
-            }
-
-            @Override
-            public String getDefaultScheme() {
-                return "consul";
-            }
-
-        }).usePlaintext(true).build();
+        ManagedChannel channel = ManagedChannelBuilder.forAddress("127.0.0.1", 12201).usePlaintext(true).build();
         // ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 6565).usePlaintext(true).build();
         String name = "John";
         final GreeterGrpc.GreeterFutureStub greeterFutureStub = GreeterGrpc.newFutureStub(channel);

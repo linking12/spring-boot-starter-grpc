@@ -102,7 +102,8 @@ public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
         ManagedChannel channel = ManagedChannelBuilder.forTarget(consulUrl)//
                                                       .nameResolverFactory(buildNameResolverFactory(serviceName, group,
                                                                                                     version))//
-                                                      .loadBalancerFactory(buildLoadBalanceFactory()).usePlaintext(true).build();//
+                                                      .loadBalancerFactory(buildLoadBalanceFactory())//
+                                                      .usePlaintext(true).build();//
         Channel channelWrap = ClientInterceptors.intercept(channel, buildStarterInterceptor());
         return channelWrap;
     }
