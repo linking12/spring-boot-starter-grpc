@@ -11,7 +11,7 @@ import org.springframework.beans.factory.config.InstantiationAwareBeanPostProces
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import com.quancheng.starter.grpc.autoconfigure.GRpcServerProperties;
+import com.quancheng.starter.grpc.autoconfigure.GRpcProperties;
 import com.quancheng.starter.grpc.internal.ConsulNameResolver;
 import com.quancheng.starter.grpc.internal.GRpcHeaderClientInterceptor;
 import com.quancheng.starter.grpc.metrics.MetricsConfiguration;
@@ -26,19 +26,20 @@ import io.grpc.LoadBalancer;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.NameResolver;
+import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.util.RoundRobinLoadBalancerFactory;
 import io.opentracing.contrib.grpc.ClientTracingInterceptor;
 
 public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdapter {
 
-    private final GRpcServerProperties gRpcServerProperties;
+    private final GRpcProperties       grpcProperties;
 
     private final GrpcTracer           grpcTracer;
 
     private final MetricsConfiguration metricsConfiguration;
 
-    public GRpcReferenceRunner(GRpcServerProperties gRpcServerProperties, MetricsConfiguration metricsConfiguration){
-        this.gRpcServerProperties = gRpcServerProperties;
+    public GRpcReferenceRunner(GRpcProperties grpcProperties, MetricsConfiguration metricsConfiguration){
+        this.grpcProperties = grpcProperties;
         this.grpcTracer = new GrpcTracer();
         this.metricsConfiguration = metricsConfiguration;
     }
@@ -94,18 +95,21 @@ public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
     }
 
     private Channel generateChannel(GRpcReference reference) {
-        String group = StringUtils.isNotBlank(reference.group()) ? reference.group() : gRpcServerProperties.getReferenceGroup();
-        String version = StringUtils.isNotBlank(reference.version()) ? reference.version() : gRpcServerProperties.getReferenceVersion();
+        String group = StringUtils.isNotBlank(reference.group()) ? reference.group() : grpcProperties.getReferenceGroup();
+        String version = StringUtils.isNotBlank(reference.version()) ? reference.version() : grpcProperties.getReferenceVersion();
         String serviceName = reference.interfaceName();
         if (StringUtils.isBlank(serviceName) || StringUtils.isBlank(group) || StringUtils.isBlank(version)) {
             throw new IllegalArgumentException("interfaceName or group or version is null");
         }
-        String consulUrl = "consul:///" + gRpcServerProperties.getConsulIp() + ":"
-                           + gRpcServerProperties.getConsulPort();
-        ManagedChannel channel = ManagedChannelBuilder.forTarget(consulUrl)//
-                                                      .nameResolverFactory(buildNameResolverFactory(serviceName, group,
-                                                                                                    version))//
-                                                      .loadBalancerFactory(buildLoadBalanceFactory()).usePlaintext(true).build();//
+        ManagedChannel channel;
+        if (!reference.localProcess()) {
+            String consulUrl = "consul:///" + grpcProperties.getConsulIp() + ":" + grpcProperties.getConsulPort();
+            channel = ManagedChannelBuilder.forTarget(consulUrl)//
+                                           .nameResolverFactory(buildNameResolverFactory(serviceName, group, version))//
+                                           .loadBalancerFactory(buildLoadBalanceFactory()).usePlaintext(true).build();//
+        } else {
+            channel = InProcessChannelBuilder.forName(GrpcConstants.GRPC_IN_LOCAL_PROCESS).build();
+        }
         Channel channelWrap = ClientInterceptors.intercept(channel, buildStarterInterceptor());
         return channelWrap;
     }

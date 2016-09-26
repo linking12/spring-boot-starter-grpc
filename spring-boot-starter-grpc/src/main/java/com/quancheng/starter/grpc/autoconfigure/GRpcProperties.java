@@ -3,7 +3,7 @@ package com.quancheng.starter.grpc.autoconfigure;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "grpc")
-public class GRpcServerProperties {
+public class GRpcProperties {
 
     private int    serverPort = 6565;
 

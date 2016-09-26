@@ -18,10 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.type.StandardMethodMetadata;
 
 import com.google.common.collect.Lists;
-import com.quancheng.starter.grpc.autoconfigure.GRpcServerProperties;
+import com.quancheng.starter.grpc.autoconfigure.GRpcProperties;
 import com.quancheng.starter.grpc.internal.GRpcHeaderServerInterceptor;
 import com.quancheng.starter.grpc.metrics.MetricsConfiguration;
 import com.quancheng.starter.grpc.metrics.MonitoringServerInterceptor;
@@ -38,19 +39,23 @@ import io.grpc.ServerBuilder;
 import io.grpc.ServerInterceptor;
 import io.grpc.ServerInterceptors;
 import io.grpc.ServerServiceDefinition;
+import io.grpc.inprocess.InProcessServerBuilder;
 import io.opentracing.contrib.grpc.ServerTracingInterceptor;
 
+@Order(value = 0)
 public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
 
     private static final Logger        log = LoggerFactory.getLogger(GRpcServerRunner.class);
 
     @Autowired
-    private GRpcServerProperties       gRpcServerProperties;
+    private GRpcProperties             grpcProperties;
 
     @Autowired
     private AbstractApplicationContext applicationContext;
 
-    private Server                     server;
+    private Server                     remoteServer;
+
+    private Server                     inprocessServer;
 
     private final GrpcTracer           grpcTracer;
 
@@ -67,29 +72,31 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
 
         Collection<ServerInterceptor> globalInterceptors = getTypedBeansWithAnnotation(GRpcGlobalInterceptor.class,
                                                                                        ServerInterceptor.class);
-        final int port = gRpcServerProperties.getServerPort();
-        final ServerBuilder<?> serverBuilder = ServerBuilder.forPort(port);
-        // find and register all GRpcService-enabled beans
+        final int port = grpcProperties.getServerPort();
+        final ServerBuilder<?> remoteServerBuilder = ServerBuilder.forPort(port);
+        final InProcessServerBuilder inprocessServerBuild = InProcessServerBuilder.forName(GrpcConstants.GRPC_IN_LOCAL_PROCESS);
         for (BindableService bindableService : getTypedBeansWithAnnotation(GRpcService.class, BindableService.class)) {
             ServerServiceDefinition serviceDefinition = bindableService.bindService();
             GRpcService gRpcServiceAnn = bindableService.getClass().getAnnotation(GRpcService.class);
             serviceDefinition = bindInterceptors(serviceDefinition, gRpcServiceAnn, globalInterceptors);
-            serverBuilder.addService(serviceDefinition);
+            remoteServerBuilder.addService(serviceDefinition);
+            inprocessServerBuild.addService(serviceDefinition);
             doRegistryService(gRpcServiceAnn);
             log.info("'{}' service has been registered.", bindableService.getClass().getName());
 
         }
-        server = serverBuilder.build().start();
-        log.info("gRPC Server started, listening on port {}.", gRpcServerProperties.getServerPort());
+        remoteServer = remoteServerBuilder.build().start();
+        inprocessServer = inprocessServerBuild.build().start();
+        log.info("gRPC Server started, listening on port {}.", grpcProperties.getServerPort());
         startDaemonAwaitThread();
     }
 
     private void doRegistryService(GRpcService gRpcService) {
-        URL consulURL = new URL("consul", gRpcServerProperties.getConsulIp(), gRpcServerProperties.getConsulPort(), "");
+        URL consulURL = new URL("consul", grpcProperties.getConsulIp(), grpcProperties.getConsulPort(), "");
         Registry consulRegistry = RegistryFactory.getRegistry(consulURL);
         Map<String, String> params = new HashMap<String, String>();
-        String group = gRpcServerProperties.getServiceGroup() != null ? gRpcServerProperties.getServiceGroup() : gRpcService.group();
-        String version = gRpcServerProperties.getServcieVersion() != null ? gRpcServerProperties.getServcieVersion() : gRpcService.version();
+        String group = grpcProperties.getServiceGroup() != null ? grpcProperties.getServiceGroup() : gRpcService.group();
+        String version = grpcProperties.getServcieVersion() != null ? grpcProperties.getServcieVersion() : gRpcService.version();
         String serviceName = gRpcService.interfaceName();
         if (StringUtils.isBlank(serviceName) || StringUtils.isBlank(group) || StringUtils.isBlank(version)) {
             throw new IllegalArgumentException("interfaceName or group or version is null");
@@ -98,7 +105,7 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
         params.put(URLParamType.group.getName(), group);
         params.put(URLParamType.version.getName(), version);
         URL serviceURL = new URL(GrpcConstants.DEFAULT_PROTOCOL, NetUtils.getLocalAddress().getHostAddress(),
-                                 gRpcServerProperties.getServerPort(), serviceName, params);
+                                 grpcProperties.getServerPort(), serviceName, params);
         consulRegistry.register(serviceURL);
         consulRegistry.available(serviceURL);
     }
@@ -136,7 +143,8 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
             @Override
             public void run() {
                 try {
-                    GRpcServerRunner.this.server.awaitTermination();
+                    GRpcServerRunner.this.remoteServer.awaitTermination();
+                    GRpcServerRunner.this.inprocessServer.awaitTermination();
                 } catch (InterruptedException e) {
                     log.error("gRPC server stopped.", e);
                 }
@@ -150,7 +158,8 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
     @Override
     public void destroy() throws Exception {
         log.info("Shutting down gRPC server ...");
-        Optional.ofNullable(server).ifPresent(Server::shutdown);
+        Optional.ofNullable(remoteServer).ifPresent(Server::shutdown);
+        Optional.ofNullable(inprocessServer).ifPresent(Server::shutdown);
         log.info("gRPC server stopped.");
     }
 

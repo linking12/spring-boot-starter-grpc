@@ -17,7 +17,7 @@ import com.quancheng.starter.grpc.GRpcReference;
 @SpringBootApplication
 public class ClientDemoApp implements CommandLineRunner, EmbeddedServletContainerCustomizer {
 
-    @GRpcReference(group = "group1", version = "1.0.0.0")
+    @GRpcReference(interfaceName = "org.lognet.springboot.grpc.proto.GreeterGrpc", group = "group1", version = "1.0.0.0")
     private GreeterGrpc.GreeterFutureStub greeterFutureStub;
 
     public static void main(String[] args) {

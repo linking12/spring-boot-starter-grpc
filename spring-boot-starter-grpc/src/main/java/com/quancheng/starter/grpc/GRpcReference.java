@@ -19,6 +19,8 @@ public @interface GRpcReference {
 
     String version() default "";
 
+    boolean localProcess() default false;
+
     // blocking async future
     String callType() default "future";
 

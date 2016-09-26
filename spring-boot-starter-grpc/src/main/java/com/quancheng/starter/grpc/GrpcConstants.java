@@ -26,6 +26,8 @@ public class GrpcConstants {
     public static final Pattern        COMMA_SPLIT_PATTERN      = Pattern.compile("\\s*[,]+\\s*");
     public static final String         EQUAL_SIGN_SEPERATOR     = "=";
 
+    public static final String         GRPC_IN_LOCAL_PROCESS    = "LocalProcess";
+
     public static Metadata.Key<byte[]> GRPC_CONTEXT_ATTACHMENTS = Metadata.Key.of("grpc_header_attachments-bin",
                                                                                   Metadata.BINARY_BYTE_MARSHALLER);
 

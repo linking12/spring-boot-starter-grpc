@@ -7,7 +7,7 @@ import com.quancheng.starter.grpc.GRpcService;
 
 import io.grpc.stub.StreamObserver;
 
-@GRpcService(interceptors = { LogInterceptor.class }, group = "group1", version = "1.0.0.0")
+@GRpcService(interceptors = { LogInterceptor.class }, group = "group1", version = "1.0.0.0", interfaceName = "org.lognet.springboot.grpc.proto.GreeterGrpc")
 public class GreeterService extends GreeterGrpc.GreeterImplBase {
 
     @Override

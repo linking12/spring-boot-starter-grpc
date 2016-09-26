@@ -18,17 +18,17 @@ import io.prometheus.client.exporter.MetricsServlet;
 
 @Configuration
 @ConditionalOnProperty(prefix = "grpc", name = "consulIp")
-@EnableConfigurationProperties(GRpcServerProperties.class)
+@EnableConfigurationProperties(GRpcProperties.class)
 public class GRpcAutoConfiguration {
 
-    private final GRpcServerProperties grpcProperty;
+    private final GRpcProperties grpcProperty;
 
-    public GRpcAutoConfiguration(GRpcServerProperties grpcProperty){
+    public GRpcAutoConfiguration(GRpcProperties grpcProperty){
         this.grpcProperty = grpcProperty;
     }
 
     @Bean
-    @ConditionalOnBean(value = GRpcServerProperties.class, annotation = GRpcService.class)
+    @ConditionalOnBean(value = GRpcProperties.class, annotation = GRpcService.class)
     public GRpcServerRunner grpcServerRunner(MetricsConfiguration metricsConfiguration) {
         return new GRpcServerRunner(metricsConfiguration);
     }
