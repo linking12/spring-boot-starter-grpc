@@ -18,6 +18,8 @@ import io.grpc.ServerInterceptor;
 @Service
 public @interface GRpcService {
 
+    String interfaceName() default "";
+
     Class<? extends ServerInterceptor>[] interceptors() default {};
 
     boolean applyGlobalInterceptors() default true;

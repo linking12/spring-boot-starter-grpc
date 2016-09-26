@@ -13,9 +13,11 @@ import java.lang.annotation.Target;
 @Target({ ElementType.FIELD, ElementType.METHOD })
 public @interface GRpcReference {
 
-    String group() default GrpcConstants.DEFAULT_GROUP;
+    String interfaceName() default "";
 
-    String version() default GrpcConstants.DEFAULT_VERSION;
+    String group() default "";
+
+    String version() default "";
 
     // blocking async future
     String callType() default "future";

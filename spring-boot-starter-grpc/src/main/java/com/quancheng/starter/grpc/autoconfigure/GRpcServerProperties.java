@@ -11,6 +11,14 @@ public class GRpcServerProperties {
 
     private int    consulPort;
 
+    private String referenceGroup;
+
+    private String referenceVersion;
+
+    private String serviceGroup;
+
+    private String servcieVersion;
+
     public int getServerPort() {
         return serverPort;
     }
@@ -33,6 +41,38 @@ public class GRpcServerProperties {
 
     public void setConsulPort(int consulPort) {
         this.consulPort = consulPort;
+    }
+
+    public String getServiceGroup() {
+        return serviceGroup;
+    }
+
+    public void setServiceGroup(String serviceGroup) {
+        this.serviceGroup = serviceGroup;
+    }
+
+    public String getServcieVersion() {
+        return servcieVersion;
+    }
+
+    public void setServcieVersion(String servcieVersion) {
+        this.servcieVersion = servcieVersion;
+    }
+
+    public String getReferenceGroup() {
+        return referenceGroup;
+    }
+
+    public void setReferenceGroup(String referenceGroup) {
+        this.referenceGroup = referenceGroup;
+    }
+
+    public String getReferenceVersion() {
+        return referenceVersion;
+    }
+
+    public void setReferenceVersion(String referenceVersion) {
+        this.referenceVersion = referenceVersion;
     }
 
 }

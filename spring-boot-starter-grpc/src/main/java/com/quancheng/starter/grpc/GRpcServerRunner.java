@@ -75,9 +75,7 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
             GRpcService gRpcServiceAnn = bindableService.getClass().getAnnotation(GRpcService.class);
             serviceDefinition = bindInterceptors(serviceDefinition, gRpcServiceAnn, globalInterceptors);
             serverBuilder.addService(serviceDefinition);
-            String superServiceName = bindableService.getClass().getGenericSuperclass().getTypeName();
-            String serviceName = StringUtils.split(superServiceName, "$")[0];
-            doRegistryService(serviceName, gRpcServiceAnn);
+            doRegistryService(gRpcServiceAnn);
             log.info("'{}' service has been registered.", bindableService.getClass().getName());
 
         }
@@ -86,13 +84,19 @@ public class GRpcServerRunner implements CommandLineRunner, DisposableBean {
         startDaemonAwaitThread();
     }
 
-    private void doRegistryService(String serviceName, GRpcService gRpcService) {
+    private void doRegistryService(GRpcService gRpcService) {
         URL consulURL = new URL("consul", gRpcServerProperties.getConsulIp(), gRpcServerProperties.getConsulPort(), "");
         Registry consulRegistry = RegistryFactory.getRegistry(consulURL);
         Map<String, String> params = new HashMap<String, String>();
+        String group = gRpcServerProperties.getServiceGroup() != null ? gRpcServerProperties.getServiceGroup() : gRpcService.group();
+        String version = gRpcServerProperties.getServcieVersion() != null ? gRpcServerProperties.getServcieVersion() : gRpcService.version();
+        String serviceName = gRpcService.interfaceName();
+        if (StringUtils.isBlank(serviceName) || StringUtils.isBlank(group) || StringUtils.isBlank(version)) {
+            throw new IllegalArgumentException("interfaceName or group or version is null");
+        }
         params.put(URLParamType.protocol.getName(), GrpcConstants.DEFAULT_PROTOCOL);
-        params.put(URLParamType.group.getName(), gRpcService.group());
-        params.put(URLParamType.version.getName(), gRpcService.version());
+        params.put(URLParamType.group.getName(), group);
+        params.put(URLParamType.version.getName(), version);
         URL serviceURL = new URL(GrpcConstants.DEFAULT_PROTOCOL, NetUtils.getLocalAddress().getHostAddress(),
                                  gRpcServerProperties.getServerPort(), serviceName, params);
         consulRegistry.register(serviceURL);

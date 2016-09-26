@@ -3,6 +3,7 @@ package com.quancheng.starter.grpc.internal;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,12 +58,12 @@ public class ConsulNameResolver extends NameResolver {
                                                                                                                                                     port),
                                                                                                                               Attributes.EMPTY));
                                                                                        }
-
+                                                                                       ConsulNameResolver.this.listener.onUpdate(Collections.singletonList(servers),
+                                                                                                                                 Attributes.EMPTY);
                                                                                    } else {
                                                                                        ConsulNameResolver.this.listener.onError(Status.NOT_FOUND.withDescription("There is no service registy in consul by"
                                                                                                                                                                  + refUrl.toFullStr()));
                                                                                    }
-
                                                                                }
                                                                            };
 

@@ -51,10 +51,7 @@ public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
             for (Field field : fields) {
                 GRpcReference reference = field.getAnnotation(GRpcReference.class);
                 if (reference != null) {
-                    String serviceName = StringUtils.substringBefore(field.getType().getName(), "$");
-                    String group = reference.group();
-                    String version = reference.version();
-                    Channel channel = this.generateChannel(serviceName, group, version);
+                    Channel channel = this.generateChannel(reference);
                     String clzzName = field.getType().getName();
                     // 没有破坏pb的生成规则
                     if (clzzName.contains("$")) {
@@ -96,14 +93,19 @@ public class GRpcReferenceRunner extends InstantiationAwareBeanPostProcessorAdap
         return bean;
     }
 
-    private Channel generateChannel(String serviceName, String group, String version) {
+    private Channel generateChannel(GRpcReference reference) {
+        String group = StringUtils.isNotBlank(reference.group()) ? reference.group() : gRpcServerProperties.getReferenceGroup();
+        String version = StringUtils.isNotBlank(reference.version()) ? reference.version() : gRpcServerProperties.getReferenceVersion();
+        String serviceName = reference.interfaceName();
+        if (StringUtils.isBlank(serviceName) || StringUtils.isBlank(group) || StringUtils.isBlank(version)) {
+            throw new IllegalArgumentException("interfaceName or group or version is null");
+        }
         String consulUrl = "consul:///" + gRpcServerProperties.getConsulIp() + ":"
                            + gRpcServerProperties.getConsulPort();
         ManagedChannel channel = ManagedChannelBuilder.forTarget(consulUrl)//
                                                       .nameResolverFactory(buildNameResolverFactory(serviceName, group,
                                                                                                     version))//
-                                                      .loadBalancerFactory(buildLoadBalanceFactory())//
-                                                      .usePlaintext(true).build();//
+                                                      .loadBalancerFactory(buildLoadBalanceFactory()).usePlaintext(true).build();//
         Channel channelWrap = ClientInterceptors.intercept(channel, buildStarterInterceptor());
         return channelWrap;
     }
